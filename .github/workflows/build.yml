@@ -1,0 +1,92 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Building .."
+
+  test-setup:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      testmo-run-id: ${{ steps.run-tests.outputs.testmo-run-id }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: npm
+      - run: npm ci
+      - run: |
+          npx testmo automation:run:create \
+            --instance $TESTMO_URL \
+            --project-id 1 \
+            --name "Parallel mocha test run" \
+            --source "unit-tests" > testmo-run-id.txt
+          ID=$(cat testmo-run-id.txt)
+          echo "::set-output name=testmo-run-id::$ID"
+        env:
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+        id: run-tests
+
+  test:
+    needs: test-setup
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_index: [0, 1, 2, 3]
+        ci_total: [4]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: npm
+      - run: npm ci
+      - run: |
+            npx testmo automation:run:submit-thread \
+              --instance $TESTMO_URL \
+              --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
+              --results results/*.xml \
+              -- npm run mocha-junit-parallel # Note space after --
+        env:
+          CI_TOTAL: ${{ matrix.ci_total }}
+          CI_INDEX: ${{ matrix.ci_index }}
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+
+  test-complete:
+    needs: [test-setup, test]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: npm
+      - run: npm ci
+      - run: |
+            npx testmo automation:run:complete \
+              --instance $TESTMO_URL \
+              --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
+        env:
+          TESTMO_URL: ${{ secrets.TESTMO_URL }}
+          TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
+
+  deploy:
+    needs: [test, test-complete]
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Deploying .."

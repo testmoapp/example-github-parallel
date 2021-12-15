@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "mocha": "node_modules/mocha/bin/mocha",
+    "mocha-junit": "node_modules/mocha/bin/mocha --reporter node_modules/mocha-junit-reporter --reporter-options jenkinsMode=1,outputs=1,mochaFile=results/mocha-test-results.xml",
+    "mocha-junit-parallel": "node split.js | xargs npm run mocha-junit"
+  },
+  "dependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.0.2",
+    "mocha-junit-reporter": "^2.0.0"
+  },
+  "devDependencies": {
+    "@testmo/testmo-cli": "^1.0.5",
+    "glob": "^7.1.7"
+  }
+}

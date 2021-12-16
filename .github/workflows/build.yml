@@ -22,11 +22,21 @@ jobs:
           node-version: 16
           cache: npm
       - run: npm ci
+
+      # Optionally add a couple of fields such as the git hash and link to the build
+      - run: |
+          npx testmo automation:resources:add-field --name git --type string \
+            --value ${GITHUB_SHA:0:7} --resources resources.json
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          npx testmo automation:resources:add-link --name build \
+            --url $RUN_URL --resources resources.json
+
       - run: |
           npx testmo automation:run:create \
             --instance $TESTMO_URL \
             --project-id 1 \
             --name "Parallel mocha test run" \
+            --resources resources.json \
             --source "unit-tests" > testmo-run-id.txt
           ID=$(cat testmo-run-id.txt)
           echo "::set-output name=testmo-run-id::$ID"

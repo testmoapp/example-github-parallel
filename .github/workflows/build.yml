@@ -63,11 +63,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: |
-            npx testmo automation:run:submit-thread \
-              --instance $TESTMO_URL \
-              --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
-              --results results/*.xml \
-              -- npm run mocha-junit-parallel # Note space after --
+          npx testmo automation:run:submit-thread \
+            --instance $TESTMO_URL \
+            --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
+            --results results/*.xml \
+            -- npm run mocha-junit-parallel # Note space after --
         env:
           CI_TOTAL: ${{ matrix.ci_total }}
           CI_INDEX: ${{ matrix.ci_index }}
@@ -87,9 +87,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: |
-            npx testmo automation:run:complete \
-              --instance $TESTMO_URL \
-              --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
+          npx testmo automation:run:complete \
+            --instance $TESTMO_URL \
+            --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
         env:
           TESTMO_URL: ${{ secrets.TESTMO_URL }}
           TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}

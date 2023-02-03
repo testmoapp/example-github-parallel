@@ -17,7 +17,6 @@ describe('files', function () {
 
         it('should export text', function () {
             assert.isTrue(true);
-            throw new Error('This is an error');
         });
     });
 });

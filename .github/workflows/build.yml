@@ -49,7 +49,7 @@ jobs:
       # Create test run
       - run: |
           npx testmo automation:run:create \
-            --instance $TESTMO_URL \
+            --instance "$TESTMO_URL" \
             --project-id 1 \
             --name "Parallel mocha test run" \
             --resources resources.json \
@@ -82,8 +82,8 @@ jobs:
       # Run automated tests and report results to Testmo
       - run: |
           npx testmo automation:run:submit-thread \
-            --instance $TESTMO_URL \
-            --run-id ${{ needs.test-setup.outputs.testmo-run-id }} \
+            --instance "$TESTMO_URL" \
+            --run-id "${{ needs.test-setup.outputs.testmo-run-id }}" \
             --results results/*.xml \
             -- npm run mocha-junit-parallel # Note space after --
         env:
@@ -108,8 +108,8 @@ jobs:
       # Mark test run completed
       - run: |
           npx testmo automation:run:complete \
-            --instance $TESTMO_URL \
-            --run-id ${{ needs.test-setup.outputs.testmo-run-id }}
+            --instance "$TESTMO_URL" \
+            --run-id "${{ needs.test-setup.outputs.testmo-run-id }}"
         env:
           TESTMO_URL: ${{ secrets.TESTMO_URL }}
           TESTMO_TOKEN: ${{ secrets.TESTMO_TOKEN }}
